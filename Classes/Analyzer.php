@@ -15,7 +15,8 @@ class Analyzer implements SingletonInterface
      */
     public function getShortLog()
     {
-        $logFile = GeneralUtility::getDeprecationLogFileName();
+        // Retrieve path to deprecationLog
+        $logFile = $this->getDeprecationLogFileName();
 
         if (!is_file($logFile)) {
             throw new \Exception('error_no-logfile-found');
@@ -54,14 +55,12 @@ class Analyzer implements SingletonInterface
                 $time2 = strtotime($time);
                 if ($time2) {
                     $line2 = substr($line, 16);
-                    //					$hash = md5($line2);
                     if (!isset($hashMap[$hash])) {
                         $all2[] = [
                             'msg' => $line2,
                             'count' => 1,
                             'time' => $time
                         ];
-                        //						$hashMap[$hash] = 1;
                     } else {
                         $duplicates++;
                         $all2[] = [];
@@ -106,5 +105,26 @@ class Analyzer implements SingletonInterface
             }
         }
         return $line;
+    }
+
+    /**
+     * Return the actual path to the TYPO3 deprecation log file
+     *
+     * @return string
+     */
+    protected function getDeprecationLogFileName()
+    {
+        // TYPO3 >= 9.0
+        if (\TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version) >= 9000000) {
+            $defaultLogFileTemplate = '/log/typo3_%s.log';
+            $logFileInfix = $GLOBALS['TYPO3_CONF_VARS']['LOG']['TYPO3']['CMS']['deprecations'][\TYPO3\CMS\Core\Log\LogLevel::NOTICE][\TYPO3\CMS\Core\Log\Writer\FileWriter::class]['logFileInfix'] ?? 'deprecations';
+            $namePart = substr(GeneralUtility::hmac($defaultLogFileTemplate, 'defaultLogFile'), 0, 10);
+            $namePart = $logFileInfix . '_' . $namePart;
+
+            return \TYPO3\CMS\Core\Core\Environment::getVarPath() . sprintf($defaultLogFileTemplate, $namePart);
+        }
+
+        // TYPO3 < 9.0
+        return GeneralUtility::getDeprecationLogFileName();
     }
 }

@@ -23,7 +23,7 @@ Visit my `Amazon whishlist <https://www.amazon.de/registry/wishlist/8F573K08TSDG
 
 Requirements
 ------------
-- TYPO3 CMS 6.2, 7.6, 8.7
+- TYPO3 CMS 6.2, 7.6, 8.7, 9.5
 
 Installation
 ------------
